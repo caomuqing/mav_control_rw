@@ -19,8 +19,8 @@
 #ifndef MAV_CONTROL_COMMON_MPC_QUEUE_H_
 #define MAV_CONTROL_COMMON_MPC_QUEUE_H_
 
-#include <mav_msgs/conversions.h>
-#include <mav_msgs/eigen_mav_msgs.h>
+#include </home/iot/catkin_ws/src/mav_comm/mav_msgs/include/mav_msgs/conversions.h>
+#include </home/iot/catkin_ws/src/mav_comm/mav_msgs/include/mav_msgs/eigen_mav_msgs.h>
 #include <deque>
 #include <chrono>
 #include <thread>

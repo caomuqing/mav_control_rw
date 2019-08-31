@@ -31,8 +31,8 @@
 #include <boost/msm/front/euml/common.hpp>
 #include <boost/msm/front/euml/operator.hpp>
 
-#include <mav_msgs/conversions.h>
-#include <mav_msgs/eigen_mav_msgs.h>
+#include </home/iot/catkin_ws/src/mav_comm/mav_msgs/include/mav_msgs/conversions.h>
+#include </home/iot/catkin_ws/src/mav_comm/mav_msgs/include/mav_msgs/eigen_mav_msgs.h>
 #include <ros/ros.h>
 #include <tf/transform_broadcaster.h>
 
@@ -371,7 +371,7 @@ private:
       const mav_msgs::EigenOdometry& current_state = fsm.current_state_;
 
       Eigen::Vector3d stick_position;
-      stick_position.x() = p.stick_deadzone_(rc_data.right_up_down);
+      stick_position.x() = p.stick_deadzone_(-rc_data.right_up_down);
       stick_position.y() = p.stick_deadzone_(-rc_data.right_side);
       stick_position.z() = p.stick_deadzone_(rc_data.left_up_down);
       const double stick_yaw = p.stick_deadzone_(-rc_data.left_side);

@@ -122,6 +122,7 @@ void MPCQueue::insertReference(const mav_msgs::EigenTrajectoryPoint& point)
   clearQueue();
   fillQueueWithPoint(point);
   queue_start_time_ = 0.0;
+  ROS_INFO("sending reference x: %f y: %f z: %f", point.position_W.x(), point.position_W.y(), point.position_W.z());
 }
 
 void MPCQueue::insertReferenceTrajectory(const mav_msgs::EigenTrajectoryPointDeque& queue)

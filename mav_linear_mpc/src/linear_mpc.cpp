@@ -51,7 +51,7 @@ LinearModelPredictiveController::LinearModelPredictiveController(const ros::Node
       linearized_command_roll_pitch_thrust_(0, 0, 0),
       mpc_queue_(nh, private_nh, kPredictionHorizonSteps),
       disturbance_observer_(nh, private_nh),
-      verbose_(false),
+      verbose_(true),
       solve_time_average_(0),
       steady_state_calculation_(nh, private_nh),
       received_first_odometry_(false)
@@ -372,6 +372,9 @@ void LinearModelPredictiveController::calculateRollPitchYawrateThrustCommand(
 
   if (enable_integrator_) {
     Eigen::Vector3d position_error = position_ref_.front() - odometry_.position_W;
+    // if(verbose_){
+    //   ROS_INFO("position reference is x: %f y: %f z:%f", position_ref_.front().x(), position_ref_.front().y(), position_ref_.front().z());
+    // }
     if (position_error.norm() < antiwindup_ball_) {
       position_error_integration_ += position_error * sampling_time_;
     } else {
@@ -421,7 +424,9 @@ void LinearModelPredictiveController::calculateRollPitchYawrateThrustCommand(
   roll = current_rpy(0);
   pitch = current_rpy(1);
   yaw = current_rpy(2);
-
+  if(verbose_){
+    ROS_INFO("current euler angle roll: %f picth: %f yaw:%f", roll, pitch, yaw);
+  }
   roll_pitch_inertial_frame << -sin(yaw) * pitch + cos(yaw) * roll, cos(yaw) * pitch
       + sin(yaw) * roll;
   x_0 << odometry_.position_W, odometry_.getVelocityWorld(), roll_pitch_inertial_frame;

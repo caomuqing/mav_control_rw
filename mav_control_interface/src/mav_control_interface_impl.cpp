@@ -16,11 +16,11 @@
  */
 
 #include <Eigen/Geometry>
-#include <mav_msgs/default_topics.h>
-#include <mav_msgs/AttitudeThrust.h>
-#include <mav_msgs/RollPitchYawrateThrust.h>
+#include </home/iot/catkin_ws/src/mav_comm/mav_msgs/include/mav_msgs/default_topics.h>
+#include </home/iot/catkin_ws/devel/include/mav_msgs/AttitudeThrust.h>
+#include </home/iot/catkin_ws/devel/include/mav_msgs/RollPitchYawrateThrust.h>
 #include <trajectory_msgs/MultiDOFJointTrajectory.h>
-
+#include <tf/transform_datatypes.h>
 #include "mav_control_interface_impl.h"
 #include "parameters.h"
 
@@ -50,6 +50,15 @@ MavControlInterfaceImpl::MavControlInterfaceImpl(ros::NodeHandle& nh, ros::NodeH
   odometry_subscriber_ = nh_.subscribe(mav_msgs::default_topics::ODOMETRY, 1,
                                        &MavControlInterfaceImpl::OdometryCallback, this,
                                        ros::TransportHints().tcpNoDelay());
+  local_position_subscriber_ = nh_.subscribe("/dji_sdk/local_position", 1,
+                                       &MavControlInterfaceImpl::LocalPositionCallback, this);
+
+  velocity_subscriber_ = nh_.subscribe("/dji_sdk/velocity", 1,
+                                       &MavControlInterfaceImpl::VelocityCallback, this);
+  // attitude_subscriber_ = nh_.subscribe("/dji_sdk/attitude", 1,
+  //                                      &MavControlInterfaceImpl::AttitudeCallback, this);
+  angular_velocity_subscriber_ = nh_.subscribe("/dji_sdk/imu", 1,
+                                       &MavControlInterfaceImpl::angularVelocityCallback, this);
 
   rc_interface_->registerUpdatedCallback(&MavControlInterfaceImpl::RcUpdatedCallback, this);
 
@@ -57,6 +66,7 @@ MavControlInterfaceImpl::MavControlInterfaceImpl(ros::NodeHandle& nh, ros::NodeH
   back_to_position_hold_server_ = nh.advertiseService("back_to_position_hold",
                                                       &MavControlInterfaceImpl::BackToPositionHoldCallback,
                                                       this);
+  odomPub = nh.advertise<nav_msgs::Odometry>("/raven/odom", 100);
 
   state_machine_.reset(new state_machine::StateMachine(nh_, private_nh_, controller));
 
@@ -133,6 +143,62 @@ void MavControlInterfaceImpl::OdometryCallback(const nav_msgs::OdometryConstPtr&
   odometry.timestamp_ns = ros::Time::now().toNSec();
   state_machine_->process_event(state_machine::OdometryUpdate(odometry));
 }
+
+void MavControlInterfaceImpl::LocalPositionCallback(const geometry_msgs::PointStampedConstPtr& localposition_msg)
+{
+  ROS_INFO_ONCE("Control interface got first position message from dji sdk.");
+  position_updated = true;
+  dji_position.x = localposition_msg->point.x;
+  dji_position.y = localposition_msg->point.y;
+  dji_position.z = localposition_msg->point.z;
+  
+}
+
+void MavControlInterfaceImpl::VelocityCallback(const geometry_msgs::Vector3StampedConstPtr& msg)
+{
+  ROS_INFO_ONCE("Control interface got first velocity message from dji sdk.");
+  linear_velocity_updated =  true;
+  dji_linear_velocity = msg->vector;
+}
+
+void MavControlInterfaceImpl::angularVelocityCallback(const sensor_msgs::ImuConstPtr& msg)
+{
+  ROS_INFO_ONCE("Control interface got first imu message from dji sdk.");
+  if (position_updated && linear_velocity_updated){
+    position_updated = false;
+    linear_velocity_updated = false;
+
+    nav_msgs::Odometry odometry_msg;
+    odometry_msg.header.stamp = ros::Time::now();
+    odometry_msg.header.frame_id = "odom";
+    odometry_msg.child_frame_id = "odom";
+    odometry_msg.pose.pose.position = dji_position;
+    tf::Quaternion q0(msg->orientation.x, msg->orientation.y, msg->orientation.z, msg->orientation.w);
+    //tf::Quaternion qinv = q0.inverse();
+    // q0.x = msg->orientation.x;
+    // q0.y = msg->orientation.y;
+    // q0.z = msg->orientation.z;
+    // q0.w = msg->orientation.w;
+    //tf::Quaternion q1 =  tf::createQuaternionFromRPY(0, 0, 0);
+    tf::Quaternion tarQ = q0;//*q1;
+    odometry_msg.pose.pose.orientation.x = tarQ.x();
+    odometry_msg.pose.pose.orientation.y = tarQ.y();
+    odometry_msg.pose.pose.orientation.z = tarQ.z();
+    odometry_msg.pose.pose.orientation.w = tarQ.w();
+
+    odometry_msg.twist.twist.linear = dji_linear_velocity;
+    odometry_msg.twist.twist.angular = msg->angular_velocity;
+    odomPub.publish(odometry_msg);
+    // mav_msgs::EigenOdometry odometry;
+    // mav_msgs::eigenOdometryFromMsg(*odometry_msg, &odometry);
+    // // Stamp odometry upon reception to be robust against timestamps "in the future".
+    // odometry.timestamp_ns = ros::Time::now().toNSec();
+    // state_machine_->process_event(state_machine::OdometryUpdate(odometry));
+    ROS_INFO_ONCE("odometry published for the first time!");
+  }
+
+}
+
 
 void MavControlInterfaceImpl::OdometryWatchdogCallback(const ros::TimerEvent& e)
 {

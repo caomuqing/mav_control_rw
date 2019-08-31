@@ -21,10 +21,16 @@
 #include <deque>
 
 #include <ros/ros.h>
-#include <mav_msgs/eigen_mav_msgs.h>
+#include </home/iot/catkin_ws/src/mav_comm/mav_msgs/include/mav_msgs/eigen_mav_msgs.h>
 #include <nav_msgs/Odometry.h>
 #include <std_srvs/Empty.h>
 #include <trajectory_msgs/MultiDOFJointTrajectory.h>
+#include <geometry_msgs/PointStamped.h>
+#include <geometry_msgs/Point.h>
+#include <geometry_msgs/Vector3Stamped.h>
+#include <geometry_msgs/Vector3.h>
+#include <sensor_msgs/Imu.h>
+
 
 #include <mav_control_interface/deadzone.h>
 #include <mav_control_interface/position_controller_interface.h>
@@ -53,6 +59,9 @@ class MavControlInterfaceImpl
   ros::Subscriber command_trajectory_subscriber_;
   ros::Subscriber command_trajectory_array_subscriber_;
   ros::Timer odometry_watchdog_;
+  ros::Subscriber local_position_subscriber_;
+  ros::Subscriber velocity_subscriber_;
+  ros::Subscriber angular_velocity_subscriber_;
 
   ros::ServiceServer takeoff_server_;
   ros::ServiceServer back_to_position_hold_server_;
@@ -61,9 +70,21 @@ class MavControlInterfaceImpl
 
   std::unique_ptr<state_machine::StateMachine> state_machine_;
 
+  geometry_msgs::Vector3 dji_linear_velocity;
+  geometry_msgs::Vector3 dji_angular_velocity;
+  geometry_msgs::Point  dji_position;
+  ros::Publisher odomPub;
+
+  bool position_updated;
+  bool linear_velocity_updated;
+  bool angular_velocity_updated;
+
   void CommandPoseCallback(const geometry_msgs::PoseStampedConstPtr& msg);
   void CommandTrajectoryCallback(const trajectory_msgs::MultiDOFJointTrajectoryConstPtr& msg);
   void OdometryCallback(const nav_msgs::OdometryConstPtr& msg);
+  void LocalPositionCallback(const geometry_msgs::PointStampedConstPtr& localposition_msg);
+  void VelocityCallback(const geometry_msgs::Vector3StampedConstPtr& msg);
+  void angularVelocityCallback(const sensor_msgs::ImuConstPtr& msg);
   void OdometryWatchdogCallback(const ros::TimerEvent& e);
   void RcUpdatedCallback(const RcInterfaceBase&);
   bool TakeoffCallback(std_srvs::EmptyRequest& request, std_srvs::EmptyResponse& response);
