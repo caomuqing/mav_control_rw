@@ -17,6 +17,7 @@
 
 #include <Eigen/Geometry>
 #include </home/iot/catkin_ws/src/mav_comm/mav_msgs/include/mav_msgs/default_topics.h>
+#include "/home/iot/catkin_ws/src/mav_comm/mav_msgs/include/mav_msgs/common.h"
 #include </home/iot/catkin_ws/devel/include/mav_msgs/AttitudeThrust.h>
 #include </home/iot/catkin_ws/devel/include/mav_msgs/RollPitchYawrateThrust.h>
 #include <trajectory_msgs/MultiDOFJointTrajectory.h>
@@ -173,20 +174,12 @@ void MavControlInterfaceImpl::angularVelocityCallback(const sensor_msgs::ImuCons
     odometry_msg.header.frame_id = "odom";
     odometry_msg.child_frame_id = "odom";
     odometry_msg.pose.pose.position = dji_position;
-    tf::Quaternion q0(msg->orientation.x, msg->orientation.y, msg->orientation.z, msg->orientation.w);
-    //tf::Quaternion qinv = q0.inverse();
-    // q0.x = msg->orientation.x;
-    // q0.y = msg->orientation.y;
-    // q0.z = msg->orientation.z;
-    // q0.w = msg->orientation.w;
-    //tf::Quaternion q1 =  tf::createQuaternionFromRPY(0, 0, 0);
-    tf::Quaternion tarQ = q0;//*q1;
-    odometry_msg.pose.pose.orientation.x = tarQ.x();
-    odometry_msg.pose.pose.orientation.y = tarQ.y();
-    odometry_msg.pose.pose.orientation.z = tarQ.z();
-    odometry_msg.pose.pose.orientation.w = tarQ.w();
-
-    odometry_msg.twist.twist.linear = dji_linear_velocity;
+    //tf::Quaternion q0(msg->orientation.x, msg->orientation.y, msg->orientation.z, msg->orientation.w);
+    Eigen::Quaterniond orientation_W_B(msg->orientation.w, msg->orientation.x, msg->orientation.y, msg->orientation.z);
+    Eigen::Vector3d velocity_world(dji_linear_velocity.x, dji_linear_velocity.y, dji_linear_velocity.z);
+    Eigen::Vector3d velocity_B = orientation_W_B.inverse() *velocity_world;
+    mav_msgs::quaternionEigenToMsg(orientation_W_B, &odometry_msg.pose.pose.orientation);
+    mav_msgs::vectorEigenToMsg(velocity_B, &odometry_msg.twist.twist.linear);
     odometry_msg.twist.twist.angular = msg->angular_velocity;
     odomPub.publish(odometry_msg);
     // mav_msgs::EigenOdometry odometry;

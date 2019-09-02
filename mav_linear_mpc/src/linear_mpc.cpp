@@ -425,7 +425,7 @@ void LinearModelPredictiveController::calculateRollPitchYawrateThrustCommand(
   pitch = current_rpy(1);
   yaw = current_rpy(2);
   if(verbose_){
-    ROS_INFO("current euler angle roll: %f picth: %f yaw:%f", roll, pitch, yaw);
+    //ROS_INFO("current euler angle roll: %f picth: %f yaw:%f", roll, pitch, yaw);
   }
   roll_pitch_inertial_frame << -sin(yaw) * pitch + cos(yaw) * roll, cos(yaw) * pitch
       + sin(yaw) * roll;

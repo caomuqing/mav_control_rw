@@ -372,10 +372,10 @@ private:
       const mav_msgs::EigenOdometry& current_state = fsm.current_state_;
 
       Eigen::Vector3d stick_position;
-      stick_position.x() = p.stick_deadzone_(-rc_data.right_up_down);
+      stick_position.x() = p.stick_deadzone_(rc_data.right_up_down);
       stick_position.y() = p.stick_deadzone_(-rc_data.right_side);
       stick_position.z() = p.stick_deadzone_(rc_data.left_up_down);
-      const double stick_yaw = p.stick_deadzone_(rc_data.left_side);
+      const double stick_yaw = p.stick_deadzone_(-rc_data.left_side);
 
       const double stick_position_norm = stick_position.norm();
       if (stick_position_norm > 1.0) {
