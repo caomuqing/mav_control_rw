@@ -312,8 +312,11 @@ void NonlinearModelPredictiveControl::calculateRollPitchYawrateThrustCommand(
     estimated_disturbances.setZero(kDisturbanceSize);
   }
 
+  //ROS_INFO("position reference is x: %f y: %f z:%f yaw: %f", position_ref_.front().x(), position_ref_.front().y(), position_ref_.front().z(), yaw_ref_.front());
   if (enable_integrator_) {
     Eigen::Vector3d position_error = position_ref_.front() - odometry_.position_W;
+  ROS_INFO("position error is x: %f y: %f z:%f yaw: %f", position_error.x(), position_error.y(), position_error.z(), yaw_ref_.front());
+
     if (position_error.norm() < antiwindup_ball_) {
       position_error_integration_ += position_error * sampling_time_;
     } else {
@@ -399,6 +402,7 @@ void NonlinearModelPredictiveControl::calculateRollPitchYawrateThrustCommand(
   }
 
   double yaw_rate_cmd = K_yaw_ * yaw_error + yaw_rate_ref_.front();  // feed-forward yaw_rate cmd
+  //ROS_INFO("current_yaw is: %f yaw error is: %f yaw rate feed-forward is %f", current_yaw, yaw_error, yaw_rate_ref_.front());
 
   if (yaw_rate_cmd > yaw_rate_limit_) {
     yaw_rate_cmd = yaw_rate_limit_;
