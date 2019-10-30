@@ -16,10 +16,10 @@
  */
 
 #include <Eigen/Geometry>
-#include </home/iot/catkin_ws/src/mav_comm/mav_msgs/include/mav_msgs/default_topics.h>
-#include "/home/iot/catkin_ws/src/mav_comm/mav_msgs/include/mav_msgs/common.h"
-#include </home/iot/catkin_ws/devel/include/mav_msgs/AttitudeThrust.h>
-#include </home/iot/catkin_ws/devel/include/mav_msgs/RollPitchYawrateThrust.h>
+#include </home/user/catkin_ws/src/mav_comm/mav_msgs/include/mav_msgs/default_topics.h>
+#include "/home/user/catkin_ws/src/mav_comm/mav_msgs/include/mav_msgs/common.h"
+#include </home/user/catkin_ws/devel/include/mav_msgs/AttitudeThrust.h>
+#include </home/user/catkin_ws/devel/include/mav_msgs/RollPitchYawrateThrust.h>
 #include <trajectory_msgs/MultiDOFJointTrajectory.h>
 #include <tf/transform_datatypes.h>
 #include "mav_control_interface_impl.h"
@@ -68,7 +68,7 @@ MavControlInterfaceImpl::MavControlInterfaceImpl(ros::NodeHandle& nh, ros::NodeH
                                                       &MavControlInterfaceImpl::BackToPositionHoldCallback,
                                                       this);
   odomPub = nh.advertise<nav_msgs::Odometry>("/raven/odom", 100);
-
+  posePub = nh.advertise<geometry_msgs::PoseStamped>("/vins_estimator/camera_pose", 100);
   state_machine_.reset(new state_machine::StateMachine(nh_, private_nh_, controller));
 
   Parameters p;
@@ -169,9 +169,16 @@ void MavControlInterfaceImpl::angularVelocityCallback(const sensor_msgs::ImuCons
     position_updated = false;
     linear_velocity_updated = false;
 
+    geometry_msgs::PoseStamped pose_msg;  //publish pose msg as well
+    pose_msg.header.stamp = ros::Time::now();
+    pose_msg.header.frame_id = "world";
+    pose_msg.pose.position = dji_position;
+    pose_msg.pose.orientation = msg->orientation;
+    posePub.publish(pose_msg);
+
     nav_msgs::Odometry odometry_msg;
     odometry_msg.header.stamp = ros::Time::now();
-    odometry_msg.header.frame_id = "odom";
+    odometry_msg.header.frame_id = "world";
     odometry_msg.child_frame_id = "odom";
     odometry_msg.pose.pose.position = dji_position;
     //tf::Quaternion q0(msg->orientation.x, msg->orientation.y, msg->orientation.z, msg->orientation.w);

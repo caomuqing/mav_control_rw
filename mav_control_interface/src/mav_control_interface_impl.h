@@ -21,7 +21,7 @@
 #include <deque>
 
 #include <ros/ros.h>
-#include </home/iot/catkin_ws/src/mav_comm/mav_msgs/include/mav_msgs/eigen_mav_msgs.h>
+#include </home/user/catkin_ws/src/mav_comm/mav_msgs/include/mav_msgs/eigen_mav_msgs.h>
 #include <nav_msgs/Odometry.h>
 #include <std_srvs/Empty.h>
 #include <trajectory_msgs/MultiDOFJointTrajectory.h>
@@ -73,7 +73,7 @@ class MavControlInterfaceImpl
   geometry_msgs::Vector3 dji_linear_velocity;
   geometry_msgs::Vector3 dji_angular_velocity;
   geometry_msgs::Point  dji_position;
-  ros::Publisher odomPub;
+  ros::Publisher odomPub, posePub;
 
   bool position_updated;
   bool linear_velocity_updated;
