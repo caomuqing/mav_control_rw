@@ -16,10 +16,10 @@
  */
 
 #include <Eigen/Geometry>
-#include </home/user/catkin_ws/src/mav_comm/mav_msgs/include/mav_msgs/default_topics.h>
-#include "/home/user/catkin_ws/src/mav_comm/mav_msgs/include/mav_msgs/common.h"
-#include </home/user/catkin_ws/devel/include/mav_msgs/AttitudeThrust.h>
-#include </home/user/catkin_ws/devel/include/mav_msgs/RollPitchYawrateThrust.h>
+#include </home/dji/catkin_ws2/src/mav_comm/mav_msgs/include/mav_msgs/default_topics.h>
+#include "/home/dji/catkin_ws2/src/mav_comm/mav_msgs/include/mav_msgs/common.h"
+#include </home/dji/catkin_ws2/devel/include/mav_msgs/AttitudeThrust.h>
+#include </home/dji/catkin_ws2/devel/include/mav_msgs/RollPitchYawrateThrust.h>
 #include <trajectory_msgs/MultiDOFJointTrajectory.h>
 #include <tf/transform_datatypes.h>
 #include "mav_control_interface_impl.h"
@@ -173,7 +173,13 @@ void MavControlInterfaceImpl::angularVelocityCallback(const sensor_msgs::ImuCons
     pose_msg.header.stamp = ros::Time::now();
     pose_msg.header.frame_id = "world";
     pose_msg.pose.position = dji_position;
-    pose_msg.pose.orientation = msg->orientation;
+    tf::Quaternion q0(msg->orientation.x, msg->orientation.y, msg->orientation.z, msg->orientation.w);
+    tf::Quaternion q1 = tf::createQuaternionFromRPY(0, 0, -1.57);
+    tf::Quaternion q2 = tf::createQuaternionFromRPY(1.57, 0, 0);
+    tf::Quaternion qf = q0*q1*q2;
+    Eigen::Quaterniond orientation_W_camera(qf.w(), qf.x(), qf.y(), qf.z());
+    mav_msgs::quaternionEigenToMsg(orientation_W_camera, &pose_msg.pose.orientation);
+    //pose_msg.pose.orientation = msg->orientation;
     posePub.publish(pose_msg);
 
     nav_msgs::Odometry odometry_msg;
@@ -186,7 +192,7 @@ void MavControlInterfaceImpl::angularVelocityCallback(const sensor_msgs::ImuCons
     Eigen::Vector3d velocity_world(dji_linear_velocity.x, dji_linear_velocity.y, dji_linear_velocity.z);
     Eigen::Vector3d velocity_B = orientation_W_B.inverse() *velocity_world;
     mav_msgs::quaternionEigenToMsg(orientation_W_B, &odometry_msg.pose.pose.orientation);
-    mav_msgs::vectorEigenToMsg(velocity_B, &odometry_msg.twist.twist.linear);
+    mav_msgs::vectorEigenToMsg(velocity_world, &odometry_msg.twist.twist.linear);
     odometry_msg.twist.twist.angular = msg->angular_velocity;
     odomPub.publish(odometry_msg);
     // mav_msgs::EigenOdometry odometry;

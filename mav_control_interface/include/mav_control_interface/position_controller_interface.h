@@ -18,8 +18,8 @@
 #ifndef POSITION_CONTROLLER_INTERFACE_H_
 #define POSITION_CONTROLLER_INTERFACE_H_
 
-#include </home/iot/catkin_ws/src/mav_comm/mav_msgs/include/mav_msgs/conversions.h>
-#include </home/iot/catkin_ws/src/mav_comm/mav_msgs/include/mav_msgs/eigen_mav_msgs.h>
+#include </home/dji/catkin_ws2/src/mav_comm/mav_msgs/include/mav_msgs/conversions.h>
+#include </home/dji/catkin_ws2/src/mav_comm/mav_msgs/include/mav_msgs/eigen_mav_msgs.h>
 #include <nav_msgs/Odometry.h>
 
 namespace mav_control_interface {

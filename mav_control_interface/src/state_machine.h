@@ -31,8 +31,8 @@
 #include <boost/msm/front/euml/common.hpp>
 #include <boost/msm/front/euml/operator.hpp>
 
-#include </home/iot/catkin_ws/src/mav_comm/mav_msgs/include/mav_msgs/conversions.h>
-#include </home/iot/catkin_ws/src/mav_comm/mav_msgs/include/mav_msgs/eigen_mav_msgs.h>
+#include </home/dji/catkin_ws2/src/mav_comm/mav_msgs/include/mav_msgs/conversions.h>
+#include </home/dji/catkin_ws2/src/mav_comm/mav_msgs/include/mav_msgs/eigen_mav_msgs.h>
 #include <ros/ros.h>
 #include <tf/transform_broadcaster.h>
 

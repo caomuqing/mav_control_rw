@@ -21,7 +21,7 @@
 #include <deque>
 
 #include <ros/ros.h>
-#include </home/user/catkin_ws/src/mav_comm/mav_msgs/include/mav_msgs/eigen_mav_msgs.h>
+#include </home/dji/catkin_ws2/src/mav_comm/mav_msgs/include/mav_msgs/eigen_mav_msgs.h>
 #include <nav_msgs/Odometry.h>
 #include <std_srvs/Empty.h>
 #include <trajectory_msgs/MultiDOFJointTrajectory.h>
