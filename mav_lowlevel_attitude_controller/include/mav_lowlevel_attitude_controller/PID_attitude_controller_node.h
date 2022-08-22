@@ -43,7 +43,7 @@ class PIDAttitudeControllerNode
 
   //publishers
   ros::Publisher motor_velocity_reference_pub_;
-
+  ros::Publisher force_angular_accel_pub_;
   // subscribers
   ros::Subscriber command_roll_pitch_yawrate_thrust_sub_;
   ros::Subscriber odometry_sub_;

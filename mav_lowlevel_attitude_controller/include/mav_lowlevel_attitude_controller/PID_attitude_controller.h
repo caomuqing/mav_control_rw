@@ -47,6 +47,7 @@ class PIDAttitudeController
   void SetOdometry(const mav_msgs::EigenOdometry& odometry);
 
   void CalculateRotorVelocities(Eigen::VectorXd* rotor_velocities);
+  void CalculateForceAngularAcc(Eigen::VectorXd* forceAngAcc);
 
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
  private:

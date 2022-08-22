@@ -152,6 +152,51 @@ void PIDAttitudeController::CalculateRotorVelocities(Eigen::VectorXd* rotor_velo
   *rotor_velocities = rotor_velocities->cwiseSqrt();
 }
 
+void PIDAttitudeController::CalculateForceAngularAcc(Eigen::VectorXd* forceAngAcc)
+{
+  assert(initialized_params_);
+
+  forceAngAcc->resize(6);
+
+  Eigen::Vector3d angular_acceleration;
+  ComputeDesiredAngularAcc(&angular_acceleration);
+  Eigen::Vector3d current_rpy;
+  odometry_.getEulerAngles(&current_rpy);  
+  // Eigen::Vector4d angular_acceleration_thrust;
+  // angular_acceleration_thrust.block<3, 1>(0, 0) = angular_acceleration;
+  // std::cout<<"attitude_thrust_reference_ is "<<attitude_thrust_reference_<<std::endl;
+  Eigen::AngleAxisd rollAngle(attitude_thrust_reference_(0), Eigen::Vector3d::UnitX());
+  Eigen::AngleAxisd yawAngle(current_rpy(2)+attitude_thrust_reference_(2)/10, Eigen::Vector3d::UnitZ());
+  Eigen::AngleAxisd pitchAngle(attitude_thrust_reference_(1), Eigen::Vector3d::UnitY());
+  std::cout<<"desired RPY is "<<attitude_thrust_reference_/3.1415*180<<std::endl;
+
+  Eigen::Quaternion<double> q = yawAngle * pitchAngle * rollAngle;
+
+  Eigen::Matrix3d rotationMatrix = q.matrix();
+  Eigen::Vector3d force3d = rotationMatrix * Eigen::Vector3d::UnitZ() * attitude_thrust_reference_(3);
+  Eigen::Vector3d angacc_world = rotationMatrix * angular_acceleration;
+
+
+  // Eigen::AngleAxisd yawCurrent(current_rpy(2), Eigen::Vector3d::UnitZ());
+  // Eigen::AngleAxisd pitchDummy(0.0, Eigen::Vector3d::UnitY());
+  // Eigen::AngleAxisd rollDummy(0.0, Eigen::Vector3d::UnitX());
+  // std::cout<<"yawCurrent is "<<current_rpy(2)/3.1415*180<<std::endl;
+
+  // Eigen::Quaternion<double> q_world = yawCurrent * pitchDummy * rollDummy;
+
+  // Eigen::Matrix3d rotationMatrix_to_world = q_world.matrix();
+  // Eigen::Vector3d force3d_world = rotationMatrix_to_world * force3d; 
+  // std::cout<<"rotationMatrix is "<<rotationMatrix<<std::endl;
+
+  std::cout<<"force3d is "<<force3d<<std::endl;
+  // std::cout<<"force3d_world is "<<force3d_world<<std::endl;
+
+  forceAngAcc->head(3) = force3d;
+  forceAngAcc->tail(3) = angacc_world;
+  // std::cout<<"forceAngAcc is "<<forceAngAcc<<std::endl;
+
+}
+
 void PIDAttitudeController::ComputeDesiredAngularAcc(Eigen::Vector3d* angular_acc)
 {
   assert(angular_acc);
