@@ -35,8 +35,7 @@ PIDAttitudeControllerNode::PIDAttitudeControllerNode(const ros::NodeHandle& nh,
       &PIDAttitudeControllerNode::CommandRollPitchYawRateThrustCallback, this);
 
   odometry_sub_ = nh_.subscribe(mav_msgs::default_topics::ODOMETRY, 1,
-                                &PIDAttitudeControllerNode::OdometryCallback, this,
-                                ros::TransportHints().tcpNoDelay());
+                                &PIDAttitudeControllerNode::OdometryCallback, this);
 
   force_angular_accel_pub_ = nh_.advertise<mav_msgs::ForceAngularAccel>("command/forceangular", 1);
 
@@ -46,10 +45,19 @@ PIDAttitudeControllerNode::PIDAttitudeControllerNode(const ros::NodeHandle& nh,
   dynamic_reconfigure::Server<mav_linear_mpc::PIDAttitudeConfig>::CallbackType f;
   f = boost::bind(&PIDAttitudeControllerNode::DynConfigCallback, this, _1, _2);
   dyn_config_server_.setCallback(f);
+
+  SetpointpubCBTimer_ = nh_.createTimer(ros::Duration(0.01), &PIDAttitudeControllerNode::SetpointpubCB, this);  
+
 }
 
 PIDAttitudeControllerNode::~PIDAttitudeControllerNode()
 {
+}
+
+void PIDAttitudeControllerNode::SetpointpubCB(const ros::TimerEvent& e)
+{
+    // ROS_INFO("publishing !!.");  
+    force_angular_accel_pub_.publish(faac_msg_);
 }
 
 void PIDAttitudeControllerNode::CommandRollPitchYawRateThrustCallback(
@@ -94,14 +102,12 @@ void PIDAttitudeControllerNode::OdometryCallback(const nav_msgs::OdometryConstPt
   // std::cout<<"ref_forceAngAcc(1) is "<<ref_forceAngAcc(1)<<std::endl;
   // std::cout<<"ref_forceAngAcc(2) is "<<ref_forceAngAcc(2)<<std::endl;
 
-  mav_msgs::ForceAngularAccel faac_msg;
-  faac_msg.force.x = ref_forceAngAcc(0);
-  faac_msg.force.y = ref_forceAngAcc(1);
-  faac_msg.force.z = ref_forceAngAcc(2);
-  faac_msg.angular_accel.x = ref_forceAngAcc(3);
-  faac_msg.angular_accel.y = ref_forceAngAcc(4);
-  faac_msg.angular_accel.z = ref_forceAngAcc(5);
-  force_angular_accel_pub_.publish(faac_msg);
+  faac_msg_.force.x = ref_forceAngAcc(0);
+  faac_msg_.force.y = ref_forceAngAcc(1);
+  faac_msg_.force.z = ref_forceAngAcc(2);
+  faac_msg_.angular_accel.x = ref_forceAngAcc(3);
+  faac_msg_.angular_accel.y = ref_forceAngAcc(4);
+  faac_msg_.angular_accel.z = ref_forceAngAcc(5);
 
 }
 

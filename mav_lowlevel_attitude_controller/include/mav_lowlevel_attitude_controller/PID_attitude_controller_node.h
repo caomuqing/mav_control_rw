@@ -25,6 +25,7 @@
 #include <dynamic_reconfigure/server.h>
 #include <mav_lowlevel_attitude_controller/PIDAttitudeConfig.h>
 #include <mav_lowlevel_attitude_controller/PID_attitude_controller.h>
+#include <mav_msgs/ForceAngularAccel.h>
 
 namespace mav_control {
 
@@ -58,6 +59,10 @@ class PIDAttitudeControllerNode
 
   dynamic_reconfigure::Server<mav_linear_mpc::PIDAttitudeConfig> dyn_config_server_;
 
+  mav_msgs::ForceAngularAccel faac_msg_;
+  ros::Timer SetpointpubCBTimer_;
+  
+  void SetpointpubCB(const ros::TimerEvent& e);
 };
 
 }

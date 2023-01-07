@@ -168,7 +168,7 @@ void PIDAttitudeController::CalculateForceAngularAcc(Eigen::VectorXd* forceAngAc
   Eigen::AngleAxisd rollAngle(attitude_thrust_reference_(0), Eigen::Vector3d::UnitX());
   Eigen::AngleAxisd yawAngle(current_rpy(2)+attitude_thrust_reference_(2)/10, Eigen::Vector3d::UnitZ());
   Eigen::AngleAxisd pitchAngle(attitude_thrust_reference_(1), Eigen::Vector3d::UnitY());
-  std::cout<<"desired RPY is "<<attitude_thrust_reference_/3.1415*180<<std::endl;
+  // std::cout<<"desired RPY is "<<attitude_thrust_reference_/3.1415*180<<std::endl;
 
   Eigen::Quaternion<double> q = yawAngle * pitchAngle * rollAngle;
 
@@ -188,7 +188,7 @@ void PIDAttitudeController::CalculateForceAngularAcc(Eigen::VectorXd* forceAngAc
   // Eigen::Vector3d force3d_world = rotationMatrix_to_world * force3d; 
   // std::cout<<"rotationMatrix is "<<rotationMatrix<<std::endl;
 
-  std::cout<<"force3d is "<<force3d<<std::endl;
+  // std::cout<<"force3d is "<<force3d<<std::endl;
   // std::cout<<"force3d_world is "<<force3d_world<<std::endl;
 
   forceAngAcc->head(3) = force3d;
